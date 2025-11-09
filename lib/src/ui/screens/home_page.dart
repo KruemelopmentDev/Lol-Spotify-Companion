@@ -38,6 +38,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadAllData();
+    riotService.connect();
     searchController.addListener(_filterSongs);
   }
 
@@ -441,43 +442,38 @@ class _HomePageState extends State<HomePage> {
                                 color: colorScheme.onSecondary,
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.all(16),
-                                  leading: SizedBox(
-                                    width: 80,
-                                    height: 80,
-                                    child: ClipRRect(
-                                      // You might want to add a border radius, too!
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      child: Image.asset(
-                                        song.imagePath,
-                                        // These width/height properties on the Image
-                                        // are now less important, but fine to keep.
-                                        width: 80,
-                                        height: 80,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (
-                                              context,
-                                              error,
-                                              stackTrace,
-                                            ) => Container(
-                                              width: 80,
-                                              height: 80,
-                                              color: colorScheme.primary,
-                                              child: Center(
-                                                child: Text(
-                                                  song.championName
-                                                      .toUpperCase(),
-                                                  style: TextStyle(
-                                                    color:
-                                                        colorScheme.onPrimary,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                  leading: ClipRRect(
+                                    // You might want to add a border radius, too!
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Image.asset(
+                                      song.imagePath,
+                                      // These width/height properties on the Image
+                                      // are now less important, but fine to keep.
+                                      width: 56,
+                                      height: 56,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (
+                                            context,
+                                            error,
+                                            stackTrace,
+                                          ) => Container(
+                                            width: 56,
+                                            height: 56,
+                                            color: colorScheme.primary,
+                                            child: Center(
+                                              child: Text(
+                                                song.championName.toUpperCase(),
+                                                style: TextStyle(
+                                                  color: colorScheme.onPrimary,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ),
-                                      ),
+                                          ),
                                     ),
                                   ),
+
                                   title: Text(
                                     song.championName,
                                     style: TextStyle(
@@ -551,15 +547,16 @@ class _HomePageState extends State<HomePage> {
                                             context: context,
                                             builder: (context) => AlertDialog(
                                               // BG set by theme
-                                              title: Text(
-                                                loc.translate('delete_song'),
-                                                // Style set by theme
+                                              title: Center(
+                                                child: Text(
+                                                  loc.translate('delete_song'),
+                                                ),
                                               ),
                                               content: Text(
-                                                '${loc.translate('delete_confirm')} ${song.championName}?',
+                                                '${loc.translate('delete_confirm1')} ${song.songName} ${loc.translate('delete_confirm2')} ${song.artistName} ${loc.translate('delete_confirm3')} ${song.championName} ${loc.translate('delete_confirm4')}?',
                                               ),
                                               actions: [
-                                                TextButton(
+                                                OutlinedButton(
                                                   onPressed: () =>
                                                       Navigator.pop(context),
                                                   child: Text(
@@ -573,13 +570,25 @@ class _HomePageState extends State<HomePage> {
                                                     );
                                                     Navigator.pop(context);
                                                   },
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                        backgroundColor:
-                                                            colorScheme.error,
-                                                        foregroundColor:
-                                                            colorScheme.onError,
+
+                                                  style: ButtonStyle(
+                                                    backgroundColor:
+                                                        WidgetStateProperty.all(
+                                                          colorScheme.error,
+                                                        ),
+                                                    foregroundColor:
+                                                        WidgetStateProperty.all(
+                                                          colorScheme.onError,
+                                                        ),
+                                                    shape: WidgetStateProperty.all(
+                                                      RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              100,
+                                                            ),
                                                       ),
+                                                    ),
+                                                  ),
                                                   child: Text(
                                                     loc.translate('delete'),
                                                   ),
@@ -617,6 +626,11 @@ class _HomePageState extends State<HomePage> {
             color: colorScheme.onPrimary, // Use scheme
             fontWeight: FontWeight.bold,
           ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            100,
+          ), // Adjust the radius as needed
         ),
         // Background color is set by elevatedButtonTheme's parent (primary)
       ),

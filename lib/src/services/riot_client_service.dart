@@ -19,7 +19,7 @@ class RiotClientService {
     // Start a timer that tries to connect every 5 seconds
     // if not already connected.
     _connectTimer?.cancel();
-    _connectTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _connectTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (!isConnected) {
         print('RiotClientService: Client not connected. Trying...');
         _tryConnect();
@@ -135,6 +135,7 @@ class RiotClientService {
 
     try {
       final List<dynamic> json = jsonDecode(data);
+      // Check if this is the champ select event
       if (json.length < 3 ||
           json[1] != 'OnJsonApiEvent_lol-champ-select_v1_session') {
         return;
@@ -144,6 +145,22 @@ class RiotClientService {
       final Map<String, dynamic>? eventData = json[2]?['data'];
       if (eventData == null) return;
 
+      // *** 1. ADDED PHASE CHECK ***
+      // Get the timer object and check the phase
+      final Map<String, dynamic>? timer = eventData['timer'];
+      if (timer == null) return;
+
+      final String? phase = timer['phase'];
+      if (phase == null || phase != 'FINALIZATION') {
+        // If we are not in the finalization phase (e.g., "PICK", "BAN"),
+        // reset the last champion ID. This ensures that when we *do*
+        // hit FINALIZATION, the event will fire.
+        _lastChampionId = 0;
+        return;
+      }
+
+      // *** 2. PROCEED WITH EXISTING LOGIC ***
+      // We are now in the "FINALIZATION" phase
       final List<dynamic>? myTeam = eventData['myTeam'];
       final int? localPlayerCellId = eventData['localPlayerCellId'];
       if (myTeam == null || localPlayerCellId == null) return;
@@ -163,7 +180,7 @@ class RiotClientService {
 
           // Fire the callback with the champion ID as a String
           onChampionSelected?.call(championId.toString());
-          print('RiotClientService: Champion selected: $championId');
+          print('RiotClientService: Champion FINALIZED: $championId');
         } else if (championId == 0) {
           _lastChampionId = 0;
         }
@@ -179,3 +196,5 @@ class RiotClientService {
     // This is now handled by _tryConnect
   }
 }
+//check refracor
+//mehrere champions für ein song

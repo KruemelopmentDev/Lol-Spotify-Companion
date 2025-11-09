@@ -96,8 +96,8 @@ class SpotifyService {
     if (!isConnected) return false;
 
     try {
-      final response = await http.put(
-        // This is still a placeholder URL. You'll need the real Spotify API URL for playback.
+      // Step 1: Start playing the song
+      final playResponse = await http.put(
         Uri.parse('https://api.spotify.com/v1/me/player/play'),
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -108,8 +108,24 @@ class SpotifyService {
         }),
       );
 
-      return response.statusCode == 204 || response.statusCode == 200;
+      if (playResponse.statusCode != 204 && playResponse.statusCode != 200) {
+        return false;
+      }
+
+      // Step 2: Set repeat mode to 'track' (repeat single song)
+      // Wait a bit to ensure the track starts playing
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final repeatResponse = await http.put(
+        Uri.parse('https://api.spotify.com/v1/me/player/repeat?state=track'),
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+
+      // Return true if play succeeded (repeat is a bonus feature)
+      // Even if repeat fails, the song will play
+      return playResponse.statusCode == 204 || playResponse.statusCode == 200;
     } catch (e) {
+      print('Error playing song: $e');
       return false;
     }
   }

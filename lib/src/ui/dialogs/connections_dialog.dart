@@ -488,6 +488,3 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
     );
   }
 }
-//Snackbar auch in anderem Dialog
-//Überschrift Center
-//RIOT verbindung
