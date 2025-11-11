@@ -51,5 +51,7 @@
   "launch_error": "Could not launch Spotify auth URL",
   "success": "Success",
   "spotify_page_error": "Failed to authenticate. Please try again.",
-  "spotify_page_success": "You can close this tab and return to the app."
+  "spotify_page_success": "You can close this tab and return to the app.",
+  "show": "Show",
+  "exit": "Exit"
 }

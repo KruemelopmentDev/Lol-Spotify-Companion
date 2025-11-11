@@ -27,6 +27,25 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
 
+  @override
+  void initState() {
+    super.initState();
+    // Start listening to the Riot service
+    widget.riotService.addListener(_onRiotConnectionChange);
+  }
+
+  @override
+  void dispose() {
+    // Stop listening when the dialog is closed
+    widget.riotService.removeListener(_onRiotConnectionChange);
+    super.dispose();
+  }
+
+  void _onRiotConnectionChange() {
+    widget.onConnectionChanged();
+    setState(() {});
+  }
+
   Future<void> _connectSpotify(BuildContext dialogContext) async {
     final loc = AppLocalizations.of(context);
     HttpServer? server;
@@ -166,27 +185,7 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
   Future<void> _connectRiot(BuildContext dialogContext) async {
     await widget.riotService.connect();
     if (widget.riotService.isConnected) {
-      widget.riotService.startListening();
-    }
-    widget.onConnectionChanged();
-    setState(() {});
-
-    if (mounted) {
-      final loc = AppLocalizations.of(context);
-      final colorScheme = Theme.of(context).colorScheme;
-      _scaffoldMessengerKey.currentState?.clearSnackBars();
-      _scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.riotService.isConnected
-                ? loc.translate('riot_connected')
-                : loc.translate('riot_connection_failed'),
-          ),
-          backgroundColor: widget.riotService.isConnected
-              ? colorScheme.primary
-              : colorScheme.error,
-        ),
-      );
+      widget.riotService.tryConnect();
     }
   }
 
@@ -447,14 +446,14 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
                                   widget.riotService.isConnected
                                       ? Icons.link_off
                                       : Icons.link,
-                                  color: colorScheme.onPrimary,
+                                  color: Colors.white,
                                 ),
                                 label: Text(
                                   widget.riotService.isConnected
                                       ? loc.translate('disconnect')
                                       : loc.translate('connect'),
                                   style: TextStyle(
-                                    color: colorScheme.onPrimary,
+                                    color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -92,19 +93,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onChampionSelected(String championId) async {
-    final song = championSongs.firstWhere(
-      (s) => s.championId == championId,
-      orElse: () => ChampionSong(
-        championId: -1,
-        championName: '',
-        spotifyId: '',
-        songName: '',
-        artistName: '',
-        imagePath: '',
-      ),
-    );
-
-    if (song.spotifyId.isNotEmpty && spotifyConnected) {
+    final matchingSongs = championSongs
+        .where((s) => s.championId == int.tryParse(championId))
+        .toList();
+    final song = matchingSongs.isEmpty
+        ? ChampionSong(
+            championId: -1,
+            championName: '',
+            spotifyId: '',
+            songName: '',
+            artistName: '',
+            imagePath: '',
+          )
+        : matchingSongs[Random().nextInt(matchingSongs.length)];
+    if (song.championId != -1 && spotifyConnected) {
       final success = await spotifyService.playSong(song.spotifyId);
       if (mounted) {
         final loc = AppLocalizations.of(context);

@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-class RiotClientService {
+import 'package:flutter/foundation.dart';
+
+class RiotClientService with ChangeNotifier {
   WebSocket? _socket;
   Timer? _connectTimer;
   bool isConnected = false;
@@ -18,11 +20,12 @@ class RiotClientService {
   Future<void> connect() async {
     // Start a timer that tries to connect every 5 seconds
     // if not already connected.
+    tryConnect();
     _connectTimer?.cancel();
     _connectTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (!isConnected) {
         print('RiotClientService: Client not connected. Trying...');
-        _tryConnect();
+        tryConnect();
       }
     });
   }
@@ -59,7 +62,7 @@ class RiotClientService {
   }
 
   /// Tries to find the lockfile, parse it, and connect to the WebSocket.
-  void _tryConnect() async {
+  void tryConnect() async {
     final lockfile = _getLockfile();
     if (lockfile == null) {
       print('RiotClientService: Lockfile not found.');
@@ -104,6 +107,7 @@ class RiotClientService {
 
       // Subscribe to the champ select session event
       _socket!.add('[5, "OnJsonApiEvent_lol-champ-select_v1_session"]');
+      notifyListeners();
     } catch (e) {
       print('RiotClientService: Connection attempt failed: $e');
       isConnected = false;
@@ -119,6 +123,7 @@ class RiotClientService {
     isConnected = false;
     _socket = null;
     _lastChampionId = 0;
+    notifyListeners();
   }
 
   /// Called when the WebSocket connection has an error.
@@ -127,6 +132,7 @@ class RiotClientService {
     isConnected = false;
     _socket = null;
     _lastChampionId = 0;
+    notifyListeners();
   }
 
   /// Called when we receive data from the LCU WebSocket.
@@ -189,12 +195,4 @@ class RiotClientService {
       print('RiotClientService: Error parsing WebSocket data: $e');
     }
   }
-
-  // --- Public API ---
-  // (startListening is now handled by connect())
-  void startListening() {
-    // This is now handled by _tryConnect
-  }
 }
-//check refracor
-//mehrere champions für ein song

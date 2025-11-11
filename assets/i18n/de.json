@@ -50,5 +50,7 @@
   "launch_error": "Spotify Authentifizierungsseite konnte nicht geöffnet werden",
   "success": "Erfolg",
   "spotify_page_error": "Fehler beim Authentifizieren, bitte versuche es nochmal!",
-  "spotify_page_success": "Du kannst den Tab jetzt schließen und zur App zurückkehren!"
+  "spotify_page_success": "Du kannst den Tab jetzt schließen und zur App zurückkehren!",
+  "show": "Anzeigen",
+  "exit": "Beenden"
 }

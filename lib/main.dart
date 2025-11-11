@@ -9,10 +9,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows) {
     await windowManager.ensureInitialized();
-
+    await windowManager.setPreventClose(true);
     WindowOptions windowOptions = const WindowOptions(
-      size: Size(1200, 800),
-      minimumSize: Size(800, 600),
+      size: Size(800, 800),
+      minimumSize: Size(800, 800),
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
@@ -24,7 +24,6 @@ Future<void> main() async {
       await windowManager.focus();
     });
   }
-
   // Load the saved locale before running the app
   final prefs = await SharedPreferences.getInstance();
   final locale = prefs.getString('locale') ?? 'en';

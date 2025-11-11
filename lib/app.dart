@@ -17,7 +17,7 @@ class LoLSpotifyApp extends StatefulWidget {
   static void setLocale(BuildContext context, String locale) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('locale', locale);
-
+    if (!context.mounted) return;
     // Find the app's state and call the setLocale method
     final state = context.findAncestorStateOfType<_LoLSpotifyAppState>();
     state?.setLocale(locale);
@@ -30,19 +30,13 @@ class LoLSpotifyApp extends StatefulWidget {
 class _LoLSpotifyAppState extends State<LoLSpotifyApp> with WindowListener {
   late String _locale;
   final SystemTrayService _systemTrayService = SystemTrayService();
+  bool _trayInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    windowManager.addListener(this);
     _locale = widget.locale;
-    if (Platform.isWindows) {
-      windowManager.addListener(this);
-      _initSystemTray();
-    }
-  }
-
-  Future<void> _initSystemTray() async {
-    await _systemTrayService.initSystemTray();
   }
 
   // Method to update the locale state, which rebuilds the MaterialApp
@@ -54,16 +48,15 @@ class _LoLSpotifyAppState extends State<LoLSpotifyApp> with WindowListener {
 
   @override
   void dispose() {
-    if (Platform.isWindows) {
-      windowManager.removeListener(this);
-      _systemTrayService.dispose();
-    }
+    _systemTrayService.dispose();
+    windowManager.removeListener(this);
     super.dispose();
   }
 
   @override
   void onWindowClose() async {
     await windowManager.hide();
+    await windowManager.setSkipTaskbar(true);
   }
 
   @override
@@ -85,7 +78,16 @@ class _LoLSpotifyAppState extends State<LoLSpotifyApp> with WindowListener {
       ],
       supportedLocales: const [Locale('en'), Locale('de')],
 
-      home: const HomePage(),
+      home: Builder(
+        builder: (BuildContext innerContext) {
+          if (!_trayInitialized) {
+            _systemTrayService.initSystemTray(innerContext);
+            _trayInitialized = true;
+          }
+
+          return const HomePage();
+        },
+      ),
     );
   }
 }
