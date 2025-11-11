@@ -14,13 +14,11 @@ class SystemTrayService {
   Future<void> initSystemTray(BuildContext context) async {
     String trayIconPath = await _getTrayIconPath();
     final loc = AppLocalizations.of(context);
-    // Initialize system tray
     await _systemTray.initSystemTray(
       title: "LoL Spotify",
       iconPath: trayIconPath,
     );
 
-    // Setup menu
     await _menu.buildFrom([
       MenuItemLabel(
         label: loc.translate('show'),
@@ -41,7 +39,6 @@ class SystemTrayService {
 
     await _systemTray.setContextMenu(_menu);
 
-    // Handle tray icon click
     _systemTray.registerSystemTrayEventHandler((eventName) {
       if (eventName == kSystemTrayEventClick) {
         Platform.isWindows
@@ -56,7 +53,6 @@ class SystemTrayService {
   }
 
   Future<String> _getTrayIconPath() async {
-    // Copy icon from assets to temp directory
     final tempDir = await getTemporaryDirectory();
     final iconFile = File(path.join(tempDir.path, 'app_icon.ico'));
 

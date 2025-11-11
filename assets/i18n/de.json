@@ -52,5 +52,6 @@
   "spotify_page_error": "Fehler beim Authentifizieren, bitte versuche es nochmal!",
   "spotify_page_success": "Du kannst den Tab jetzt schließen und zur App zurückkehren!",
   "show": "Anzeigen",
-  "exit": "Beenden"
+  "exit": "Beenden",
+  "connectToSpotify": "Verbinde bitte zuerst deinen Spotify-Account mit der App!"
 }

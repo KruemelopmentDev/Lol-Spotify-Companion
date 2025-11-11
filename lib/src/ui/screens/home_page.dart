@@ -53,7 +53,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _initServices() async {
-    // This part is the same as before
     await spotifyService.loadTokens();
     setState(() {
       spotifyConnected = spotifyService.isConnected;
@@ -208,12 +207,12 @@ class _HomePageState extends State<HomePage> {
   Future<void> importData() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
+      if (!mounted) return;
       final loc = AppLocalizations.of(context);
 
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          // Background is set by theme
           title: Text(loc.translate('import_data')),
           content: Text(
             '${loc.translate('import_instructions')}\n${directory.path}',
@@ -259,7 +258,6 @@ class _HomePageState extends State<HomePage> {
 
   void addChampionSong(ChampionSong song) {
     setState(() {
-      championSongs.removeWhere((s) => s.championId == song.championId);
       championSongs.add(song);
       championSongs.sort((a, b) => a.championName.compareTo(b.championName));
       _filterSongs();
@@ -267,9 +265,11 @@ class _HomePageState extends State<HomePage> {
     saveData();
   }
 
-  void deleteChampionSong(int championId) {
+  void deleteChampionSong(int championId, String spotifyID) {
     setState(() {
-      championSongs.removeWhere((s) => s.championId == championId);
+      championSongs.removeWhere(
+        (s) => s.championId == championId && s.spotifyId == spotifyID,
+      );
       _filterSongs();
     });
     saveData();
@@ -288,12 +288,12 @@ class _HomePageState extends State<HomePage> {
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: colorScheme.primary, // Use scheme
+                color: colorScheme.primary,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Icon(
                 Icons.music_note,
-                color: colorScheme.onPrimary, // Use scheme
+                color: colorScheme.onPrimary,
                 size: 20,
               ),
             ),
@@ -301,19 +301,18 @@ class _HomePageState extends State<HomePage> {
             Text(
               loc.translate('app_title'),
               style: TextStyle(
-                color: colorScheme.secondary, // Use scheme (LoL Gold)
+                color: colorScheme.secondary,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1,
               ),
             ),
           ],
         ),
-        // Background, elevation, and iconTheme are set by AppBarTheme
         actions: [
           IconButton(
             icon: Stack(
               children: [
-                const Icon(Icons.link), // Color from AppBarTheme
+                const Icon(Icons.link),
                 if (spotifyConnected && riotConnected)
                   Positioned(
                     right: 0,
@@ -322,7 +321,7 @@ class _HomePageState extends State<HomePage> {
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF1DB954), // Keep Spotify Green
+                        color: Color(0xFF1DB954),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -333,7 +332,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: _showConnectionsDialog,
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.language), // Color from AppBarTheme
+            icon: const Icon(Icons.language),
             tooltip: loc.translate('language'),
             onSelected: (String locale) {
               LoLSpotifyApp.setLocale(context, locale);
@@ -354,12 +353,12 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.file_download), // Color from AppBarTheme
+            icon: const Icon(Icons.file_download),
             tooltip: loc.translate('import_data'),
             onPressed: importData,
           ),
           IconButton(
-            icon: const Icon(Icons.file_upload), // Color from AppBarTheme
+            icon: const Icon(Icons.file_upload),
             tooltip: loc.translate('export_data'),
             onPressed: exportData,
           ),
@@ -372,32 +371,25 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: colorScheme.surface, // Use scheme
+                    color: colorScheme.surface,
                     border: Border(
-                      bottom: BorderSide(
-                        color: colorScheme.outline,
-                        width: 1,
-                      ), // Use scheme
+                      bottom: BorderSide(color: colorScheme.outline, width: 1),
                     ),
                   ),
                   child: TextField(
                     controller: searchController,
-                    style: TextStyle(
-                      color: colorScheme.onSurface,
-                    ), // Use scheme
+                    style: TextStyle(color: colorScheme.onSurface),
                     decoration: InputDecoration(
                       hintText: loc.translate('search_placeholder'),
-                      // hintStyle is set by inputDecorationTheme
                       prefixIcon: Icon(
                         Icons.search,
-                        color: colorScheme.primary, // Use scheme
+                        color: colorScheme.primary,
                       ),
                       suffixIcon: searchController.text.isNotEmpty
                           ? IconButton(
                               icon: Icon(
                                 Icons.clear,
-                                color:
-                                    colorScheme.onSurfaceVariant, // Use scheme
+                                color: colorScheme.onSurfaceVariant,
                               ),
                               onPressed: () {
                                 searchController.clear();
@@ -416,7 +408,7 @@ class _HomePageState extends State<HomePage> {
                               Icon(
                                 Icons.music_off,
                                 size: 64,
-                                color: Colors.grey[800], // Keep neutral
+                                color: Colors.grey[800],
                               ),
                               const SizedBox(height: 16),
                               Text(
@@ -425,7 +417,7 @@ class _HomePageState extends State<HomePage> {
                                     : loc.translate('no_results'),
                                 style: TextStyle(
                                   fontSize: 18,
-                                  color: Colors.grey[700], // Keep neutral
+                                  color: Colors.grey[700],
                                 ),
                               ),
                             ],
@@ -438,19 +430,15 @@ class _HomePageState extends State<HomePage> {
                             final song = filteredSongs[index];
                             return HoverableListItem(
                               child: Card(
-                                // Card color is set by cardTheme
                                 margin: EdgeInsets.all(0),
                                 elevation: 0,
                                 color: colorScheme.onSecondary,
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.all(16),
                                   leading: ClipRRect(
-                                    // You might want to add a border radius, too!
                                     borderRadius: BorderRadius.circular(8.0),
                                     child: Image.asset(
                                       song.imagePath,
-                                      // These width/height properties on the Image
-                                      // are now less important, but fine to keep.
                                       width: 56,
                                       height: 56,
                                       fit: BoxFit.cover,
@@ -481,8 +469,7 @@ class _HomePageState extends State<HomePage> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
-                                      color:
-                                          colorScheme.secondary, // Use scheme
+                                      color: colorScheme.secondary,
                                     ),
                                   ),
                                   subtitle: Column(
@@ -495,8 +482,7 @@ class _HomePageState extends State<HomePage> {
                                           Icon(
                                             Icons.music_note,
                                             size: 16,
-                                            color: colorScheme
-                                                .primary, // Use scheme
+                                            color: colorScheme.primary,
                                           ),
                                           const SizedBox(width: 4),
                                           Expanded(
@@ -504,8 +490,7 @@ class _HomePageState extends State<HomePage> {
                                               song.songName,
                                               style: TextStyle(
                                                 fontSize: 14,
-                                                color: colorScheme
-                                                    .onSurface, // Use scheme
+                                                color: colorScheme.onSurface,
                                               ),
                                             ),
                                           ),
@@ -517,8 +502,7 @@ class _HomePageState extends State<HomePage> {
                                           Icon(
                                             Icons.person,
                                             size: 16,
-                                            color: colorScheme
-                                                .tertiary, // Use scheme
+                                            color: colorScheme.tertiary,
                                           ),
                                           const SizedBox(width: 4),
                                           Expanded(
@@ -527,7 +511,7 @@ class _HomePageState extends State<HomePage> {
                                               style: TextStyle(
                                                 fontSize: 13,
                                                 color: colorScheme
-                                                    .onSurfaceVariant, // Use scheme
+                                                    .onSurfaceVariant,
                                               ),
                                             ),
                                           ),
@@ -541,14 +525,12 @@ class _HomePageState extends State<HomePage> {
                                       IconButton(
                                         icon: Icon(
                                           Icons.delete,
-                                          color: colorScheme
-                                              .error, // Use scheme (Noxian Red)
+                                          color: colorScheme.error,
                                         ),
                                         onPressed: () {
                                           showDialog(
                                             context: context,
                                             builder: (context) => AlertDialog(
-                                              // BG set by theme
                                               title: Center(
                                                 child: Text(
                                                   loc.translate('delete_song'),
@@ -569,6 +551,7 @@ class _HomePageState extends State<HomePage> {
                                                   onPressed: () {
                                                     deleteChampionSong(
                                                       song.championId,
+                                                      song.spotifyId,
                                                     );
                                                     Navigator.pop(context);
                                                   },
@@ -612,29 +595,30 @@ class _HomePageState extends State<HomePage> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) => AddChampionDialog(
-              champions: _allChampions,
-              onAdd: addChampionSong,
-              spotifyService: spotifyService,
-            ),
-          );
+          if (spotifyConnected) {
+            showDialog(
+              context: context,
+              builder: (context) => AddChampionDialog(
+                champions: _allChampions,
+                onAdd: addChampionSong,
+                spotifyService: spotifyService,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(loc.translate("connectToSpotify"))),
+            );
+          }
         },
-        icon: Icon(Icons.add, color: colorScheme.onPrimary), // Use scheme
+        icon: Icon(Icons.add, color: colorScheme.onPrimary),
         label: Text(
           loc.translate('add_champion'),
           style: TextStyle(
-            color: colorScheme.onPrimary, // Use scheme
+            color: colorScheme.onPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            100,
-          ), // Adjust the radius as needed
-        ),
-        // Background color is set by elevatedButtonTheme's parent (primary)
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
       ),
     );
   }

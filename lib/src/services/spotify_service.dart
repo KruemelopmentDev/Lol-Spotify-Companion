@@ -44,7 +44,6 @@ class SpotifyService {
 
   Future<Map<String, String>?> getTrackDetails(String trackId) async {
     if (!isConnected) {
-      print('Not connected, cannot fetch track details.');
       return null;
     }
 
@@ -59,25 +58,21 @@ class SpotifyService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
 
-        // Get song name
         final String songName = data['name'] ?? 'Unknown Song';
 
-        // Get artist(s)
         final List<dynamic> artists = data['artists'] ?? [];
         final String artistName = artists
             .map((artist) => artist['name'] as String? ?? 'Unknown Artist')
-            .join(', '); // Join multiple artists with a comma
+            .join(', ');
 
         return {
           'songName': songName,
           'artistName': artistName.isEmpty ? 'Unknown Artist' : artistName,
         };
       } else {
-        print('Failed to get track details: ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Error fetching track details: $e');
       return null;
     }
   }
@@ -94,9 +89,13 @@ class SpotifyService {
 
   Future<bool> playSong(String spotifyId) async {
     if (!isConnected) return false;
-
+    if (spotifyId.contains("/")) {
+      spotifyId = spotifyId.substring(spotifyId.lastIndexOf("/") + 1);
+    }
+    if (spotifyId.contains("?")) {
+      spotifyId = spotifyId.split("?")[0];
+    }
     try {
-      // Step 1: Start playing the song
       final playResponse = await http.put(
         Uri.parse('https://api.spotify.com/v1/me/player/play'),
         headers: {
@@ -107,13 +106,10 @@ class SpotifyService {
           'uris': ['spotify:track:$spotifyId'],
         }),
       );
-
       if (playResponse.statusCode != 204 && playResponse.statusCode != 200) {
         return false;
       }
 
-      // Step 2: Set repeat mode to 'track' (repeat single song)
-      // Wait a bit to ensure the track starts playing
       await Future.delayed(const Duration(milliseconds: 500));
 
       final repeatResponse = await http.put(
@@ -121,24 +117,19 @@ class SpotifyService {
         headers: {'Authorization': 'Bearer $accessToken'},
       );
 
-      // Return true if play succeeded (repeat is a bonus feature)
-      // Even if repeat fails, the song will play
       return playResponse.statusCode == 204 || playResponse.statusCode == 200;
     } catch (e) {
-      print('Error playing song: $e');
       return false;
     }
   }
 
-  // This exchanges the code from the redirect for an access token
   Future<bool> exchangeCodeForToken(String code) async {
     try {
-      // Create the authorization header (Basic Auth)
       final String credentials = '$clientId:$clientSecret';
       final String encodedCredentials = base64Encode(utf8.encode(credentials));
 
       final response = await http.post(
-        Uri.parse(_tokenUrl), // Now uses the correct URL
+        Uri.parse(_tokenUrl),
         headers: {
           'Authorization': 'Basic $encodedCredentials',
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -156,16 +147,12 @@ class SpotifyService {
         final String? refreshToken = data['refresh_token'];
         final int expiresIn = data['expires_in'];
 
-        // Save the tokens
         await saveTokens(accessToken, refreshToken, expiresIn);
         return true;
       } else {
-        // This print will now give a more useful error from Spotify
-        print('Failed to exchange token: ${response.body}');
         return false;
       }
     } catch (e) {
-      print('Error exchanging code: $e');
       return false;
     }
   }

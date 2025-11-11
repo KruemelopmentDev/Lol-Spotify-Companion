@@ -5,7 +5,6 @@ import 'dart:io';
 import 'app.dart';
 
 Future<void> main() async {
-  // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows) {
     await windowManager.ensureInitialized();
@@ -24,7 +23,6 @@ Future<void> main() async {
       await windowManager.focus();
     });
   }
-  // Load the saved locale before running the app
   final prefs = await SharedPreferences.getInstance();
   final locale = prefs.getString('locale') ?? 'en';
 

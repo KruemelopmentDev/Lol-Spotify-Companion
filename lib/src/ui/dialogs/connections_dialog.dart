@@ -30,13 +30,11 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
   @override
   void initState() {
     super.initState();
-    // Start listening to the Riot service
     widget.riotService.addListener(_onRiotConnectionChange);
   }
 
   @override
   void dispose() {
-    // Stop listening when the dialog is closed
     widget.riotService.removeListener(_onRiotConnectionChange);
     super.dispose();
   }
@@ -246,7 +244,6 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      // Spotify Connection
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -325,7 +322,7 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
                                           : () =>
                                                 _connectSpotify(dialogContext)),
                                 icon: isConnecting
-                                    ? Container(
+                                    ? SizedBox(
                                         width: 20,
                                         height: 20,
                                         child: const CircularProgressIndicator(
@@ -362,7 +359,6 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      // Riot Client Connection
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -487,3 +483,4 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
     );
   }
 }
+//TODO fehlermeldung wenn verbinden von button fehlschlägt, process monitor

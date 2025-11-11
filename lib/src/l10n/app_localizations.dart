@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// Handles holding and providing the translated strings
 class AppLocalizations {
   final String locale;
   final Map<String, String> _localizedStrings;
@@ -18,7 +17,6 @@ class AppLocalizations {
   }
 }
 
-// Handles loading the correct localization file from assets
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const AppLocalizationsDelegate();
 
@@ -39,11 +37,8 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
         (key, value) => MapEntry(key, value.toString()),
       );
     } catch (e) {
-      print("Error loading localization file for '$localeCode': $e");
-      localizedStrings = {}; // Default to empty on failure
+      localizedStrings = {};
     }
-
-    // Return the fully initialized object
     return AppLocalizations(localeCode, localizedStrings);
   }
 

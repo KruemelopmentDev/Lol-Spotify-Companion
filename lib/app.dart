@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:lol_spotify_companion/src/services/process_monitor.dart';
 import 'package:lol_spotify_companion/src/utils/system_tray_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
@@ -13,12 +12,10 @@ class LoLSpotifyApp extends StatefulWidget {
   final String locale;
   const LoLSpotifyApp({super.key, required this.locale});
 
-  // Static method to allow any widget to change the app's locale
   static void setLocale(BuildContext context, String locale) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('locale', locale);
     if (!context.mounted) return;
-    // Find the app's state and call the setLocale method
     final state = context.findAncestorStateOfType<_LoLSpotifyAppState>();
     state?.setLocale(locale);
   }
@@ -31,15 +28,32 @@ class _LoLSpotifyAppState extends State<LoLSpotifyApp> with WindowListener {
   late String _locale;
   final SystemTrayService _systemTrayService = SystemTrayService();
   bool _trayInitialized = false;
+  final ProcessMonitor _monitor = ProcessMonitor();
 
   @override
   void initState() {
     super.initState();
     windowManager.addListener(this);
     _locale = widget.locale;
+    _monitor.setupListener((processName) {
+      print('Process started: $processName');
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('League of Legends Started!'),
+          content: Text('$processName is now running'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    });
+    _monitor.startMonitoring('LeagueClient.exe');
   }
 
-  // Method to update the locale state, which rebuilds the MaterialApp
   void setLocale(String locale) {
     setState(() {
       _locale = locale;
@@ -49,6 +63,7 @@ class _LoLSpotifyAppState extends State<LoLSpotifyApp> with WindowListener {
   @override
   void dispose() {
     _systemTrayService.dispose();
+    _monitor.stopMonitoring();
     windowManager.removeListener(this);
     super.dispose();
   }
@@ -65,13 +80,11 @@ class _LoLSpotifyAppState extends State<LoLSpotifyApp> with WindowListener {
       title: 'LoL Spotify Assistant',
       debugShowCheckedModeBanner: false,
 
-      // Theme is loaded from our separate theme file
       theme: appTheme,
 
-      // Locale and localization settings
       locale: Locale(_locale),
       localizationsDelegates: [
-        const AppLocalizationsDelegate(), // Our custom localizations
+        const AppLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

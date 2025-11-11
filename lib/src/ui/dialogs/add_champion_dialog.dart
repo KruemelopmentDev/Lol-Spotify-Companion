@@ -63,14 +63,9 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
       });
       return;
     }
-
-    // Try to parse the ID from a URL or URI
     String? trackId;
-
-    // Try to parse as a full URL or URI
     try {
       final uri = Uri.parse(text);
-      // Case 1: Full URL (https://open.spotify.com/intl-de/track/ID?si=...)
       if (uri.host.contains('spotify.com')) {
         final trackIndex = uri.pathSegments.indexOf('track');
         if (trackIndex != -1 && uri.pathSegments.length > trackIndex + 1) {
@@ -79,7 +74,6 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
       }
     } catch (_) {}
 
-    // If not parsed as a URL, assume the text *is* the ID
     trackId ??= text;
 
     setState(() {
@@ -168,13 +162,11 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: double
-                            .infinity, // This makes the Text fill the width
+                        width: double.infinity,
                         child: Text(
                           loc.translate('add_champion_song'),
                           style: theme.dialogTheme.titleTextStyle,
-                          textAlign:
-                              TextAlign.center, // This will now center the text
+                          textAlign: TextAlign.center,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -182,16 +174,13 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
                         loc.translate('champion'),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface, // Use scheme
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
-
-                      // *** NEW: Row to hold image and text field ***
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Show image only if a champion is selected
                           if (selectedChampion != null)
                             Padding(
                               padding: const EdgeInsets.only(right: 12.0),
@@ -221,8 +210,6 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
                                 ),
                               ),
                             ),
-
-                          // Text field is now in an Expanded widget
                           Expanded(
                             child: TextField(
                               controller: championController,
@@ -232,7 +219,6 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
                                 hintText: loc.translate(
                                   'search_select_champion',
                                 ),
-                                // Only show search icon if no champion is selected
                                 prefixIcon: selectedChampion == null
                                     ? Icon(
                                         Icons.search,
@@ -284,7 +270,6 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
                         style: TextStyle(color: colorScheme.onSurface),
                         decoration: InputDecoration(
                           hintText: 'e.g., 3n3Ppam7vgaVa1iaRUc9Lp',
-                          // Add a loading spinner
                           suffixIcon: _isFetchingSong
                               ? Container(
                                   padding: const EdgeInsets.all(12.0),
@@ -314,7 +299,6 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
                         style: TextStyle(color: colorScheme.onSurface),
                         decoration: InputDecoration(
                           hintText: 'Schnapp!',
-                          // Add a loading spinner
                           suffixIcon: _isFetchingSong
                               ? Container(
                                   padding: const EdgeInsets.all(12.0),
@@ -344,7 +328,6 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
                         style: TextStyle(color: colorScheme.onSurface),
                         decoration: InputDecoration(
                           hintText: 'Gzuz',
-                          // Add a loading spinner
                           suffixIcon: _isFetchingSong
                               ? Container(
                                   padding: const EdgeInsets.all(12.0),

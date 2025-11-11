@@ -21,7 +21,7 @@ class _HoverableListItemState extends State<HoverableListItem> {
       onExit: (_) => setState(() => isHovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        transform: Matrix4.identity()..translate(0.0, isHovered ? -2.0 : 0.0),
+        transform: Matrix4.translationValues(0.0, isHovered ? -2.0 : 0.0, 0.0),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
           opacity: isHovered ? 1.0 : 0.85,
@@ -29,10 +29,7 @@ class _HoverableListItemState extends State<HoverableListItem> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isHovered
-                    ? colorScheme
-                          .primary // Use scheme
-                    : Colors.transparent,
+                color: isHovered ? colorScheme.primary : Colors.transparent,
                 width: 2,
               ),
             ),

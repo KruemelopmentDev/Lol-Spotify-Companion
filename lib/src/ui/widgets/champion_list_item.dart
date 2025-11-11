@@ -29,13 +29,11 @@ class _ChampionListItemState extends State<ChampionListItem> {
         duration: const Duration(milliseconds: 150),
         decoration: BoxDecoration(
           color: isHovered
-              ? colorScheme.primary.withOpacity(0.2) // Use scheme
+              ? colorScheme.primary.withAlpha(20)
               : Colors.transparent,
           border: Border(
             left: BorderSide(
-              color: isHovered
-                  ? colorScheme.primary
-                  : Colors.transparent, // Use scheme
+              color: isHovered ? colorScheme.primary : Colors.transparent,
               width: 3,
             ),
           ),
@@ -54,12 +52,12 @@ class _ChampionListItemState extends State<ChampionListItem> {
                 errorBuilder: (context, error, stackTrace) => Container(
                   width: 32,
                   height: 32,
-                  color: colorScheme.primary, // Use scheme
+                  color: colorScheme.primary,
                   child: Center(
                     child: Text(
                       widget.champion.name[0].toUpperCase(),
                       style: TextStyle(
-                        color: colorScheme.onPrimary, // Use scheme
+                        color: colorScheme.onPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -71,10 +69,7 @@ class _ChampionListItemState extends State<ChampionListItem> {
           title: AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 150),
             style: TextStyle(
-              color: isHovered
-                  ? colorScheme
-                        .secondary // Use scheme (gold) on hover
-                  : colorScheme.onSurface, // Use scheme
+              color: isHovered ? colorScheme.secondary : colorScheme.onSurface,
               fontWeight: isHovered ? FontWeight.bold : FontWeight.normal,
             ),
             child: Text(widget.champion.name),

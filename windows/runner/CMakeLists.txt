@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(runner LANGUAGES CXX)
 
+
+set(FLUTTER_EPHEMERAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../flutter/ephemeral")
 # Define the application target. To change its name, change BINARY_NAME in the
 # top-level CMakeLists.txt, not the value here, or `flutter run` will no longer
 # work.
@@ -14,6 +16,8 @@ add_executable(${BINARY_NAME} WIN32
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
   "Runner.rc"
   "runner.exe.manifest"
+  "process_monitor.cpp"
+  "process_monitor.h"
 )
 
 # Apply the standard set of build settings. This can be removed for applications
