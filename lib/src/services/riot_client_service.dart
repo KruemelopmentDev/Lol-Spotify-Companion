@@ -10,13 +10,23 @@ class RiotClientService with ChangeNotifier {
   bool isConnected = false;
   Function(String championId)? onChampionSelected;
   int _lastChampionId = 0;
+  int _connectTime = 0;
+  static int timeout = 300;
 
   Future<void> connect() async {
     tryConnect();
     _connectTimer?.cancel();
-    _connectTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _connectTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (_connectTime > timeout || isConnected) {
+        _connectTimer?.cancel();
+        _connectTimer = null;
+        _connectTime = 0;
+        return;
+      }
+
       if (!isConnected) {
         tryConnect();
+        _connectTime += 10;
       }
     });
   }
@@ -47,6 +57,7 @@ class RiotClientService with ChangeNotifier {
   void tryConnect() async {
     final lockfile = _getLockfile();
     if (lockfile == null) {
+      notifyListeners();
       return;
     }
 
@@ -83,6 +94,7 @@ class RiotClientService with ChangeNotifier {
       _socket!.add('[5, "OnJsonApiEvent_lol-champ-select_v1_session"]');
       notifyListeners();
     } catch (e) {
+      notifyListeners();
       isConnected = false;
       _socket = null;
     }
@@ -104,7 +116,6 @@ class RiotClientService with ChangeNotifier {
 
   void _onSocketData(dynamic data) {
     if (data is! String) return;
-
     try {
       final List<dynamic> json = jsonDecode(data);
       if (json.length < 3 ||

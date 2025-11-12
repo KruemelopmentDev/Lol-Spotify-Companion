@@ -53,5 +53,9 @@
   "spotify_page_success": "Du kannst den Tab jetzt schließen und zur App zurückkehren!",
   "show": "Anzeigen",
   "exit": "Beenden",
-  "connectToSpotify": "Verbinde bitte zuerst deinen Spotify-Account mit der App!"
+  "connectToSpotify": "Verbinde bitte zuerst deinen Spotify-Account mit der App!",
+  "riot_connection_error": "Fehler beim Verbinden mit dem League Client",
+  "connecting": "Verbinden...",
+  "now_playing": "wird jetzt abgespielt",
+  "playback_failed": "Fehler beim Abspielen"
 }

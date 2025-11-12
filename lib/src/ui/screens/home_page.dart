@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lol_spotify_companion/src/services/process_monitor.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   final RiotClientService riotService = RiotClientService();
   bool spotifyConnected = false;
   bool riotConnected = false;
+  final ProcessMonitor _monitor = ProcessMonitor();
 
   @override
   void initState() {
@@ -41,6 +43,10 @@ class _HomePageState extends State<HomePage> {
     _loadAllData();
     riotService.connect();
     searchController.addListener(_filterSongs);
+    _monitor.setupListener((processName) {
+      riotService.connect();
+    });
+    _monitor.startMonitoring('LeagueClient.exe');
   }
 
   Future<void> _loadAllData() async {
@@ -114,7 +120,7 @@ class _HomePageState extends State<HomePage> {
           SnackBar(
             content: Text(
               success
-                  ? '${loc.translate('now_playing')}: ${song.songName} - ${song.artistName}'
+                  ? '${song.songName} - ${song.artistName} ${loc.translate('now_playing')}'
                   : loc.translate('playback_failed'),
             ),
             backgroundColor: success ? colorScheme.primary : colorScheme.error,
@@ -169,7 +175,7 @@ class _HomePageState extends State<HomePage> {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final file = File('${directory.path}/lol_spotify_data_$timestamp.json');
+      final file = File('${directory.path}\\lol_spotify_data_$timestamp.json');
 
       final jsonList = championSongs.map((e) => e.toJson()).toList();
       await file.writeAsString(jsonEncode(jsonList));
@@ -182,11 +188,6 @@ class _HomePageState extends State<HomePage> {
             content: Text('${loc.translate('export_success')}\n${file.path}'),
             backgroundColor: colorScheme.primary,
             duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'OK',
-              textColor: colorScheme.onPrimary,
-              onPressed: () {},
-            ),
           ),
         );
       }
@@ -627,6 +628,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     searchController.dispose();
     riotService.disconnect();
+    _monitor.stopMonitoring();
     super.dispose();
   }
 }

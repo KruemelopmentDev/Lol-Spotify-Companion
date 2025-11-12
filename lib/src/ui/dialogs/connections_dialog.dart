@@ -26,6 +26,7 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
   bool isConnecting = false;
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
+  bool alertErrorRiotConnection = false;
 
   @override
   void initState() {
@@ -40,7 +41,21 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
   }
 
   void _onRiotConnectionChange() {
+    print(1);
     widget.onConnectionChanged();
+    if (alertErrorRiotConnection && !widget.riotService.isConnected) {
+      final loc = AppLocalizations.of(context);
+      _scaffoldMessengerKey.currentState?.clearSnackBars();
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text(loc.translate('riot_connection_error')),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      setState(() {
+        alertErrorRiotConnection = false;
+      });
+    }
     setState(() {});
   }
 
@@ -59,12 +74,12 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
           Uri.parse(authUrl),
           mode: LaunchMode.externalApplication,
         );
-      } else {
+      } else if (mounted) {
         _scaffoldMessengerKey.currentState?.clearSnackBars();
         _scaffoldMessengerKey.currentState?.showSnackBar(
           SnackBar(
             content: Text(loc.translate('launch_error')),
-            backgroundColor: const Color(0xFF1DB954),
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
         return;
@@ -181,10 +196,10 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
   }
 
   Future<void> _connectRiot(BuildContext dialogContext) async {
-    await widget.riotService.connect();
-    if (widget.riotService.isConnected) {
-      widget.riotService.tryConnect();
-    }
+    setState(() {
+      alertErrorRiotConnection = true;
+    });
+    widget.riotService.tryConnect();
   }
 
   Future<void> _disconnectRiot(BuildContext dialogContext) async {
@@ -483,4 +498,3 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
     );
   }
 }
-//TODO fehlermeldung wenn verbinden von button fehlschlägt, process monitor

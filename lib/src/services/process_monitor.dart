@@ -8,17 +8,13 @@ class ProcessMonitor {
       await platform.invokeMethod('startMonitoring', {
         'processName': processName,
       });
-    } catch (e) {
-      print('Error starting monitoring: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> stopMonitoring() async {
     try {
       await platform.invokeMethod('stopMonitoring');
-    } catch (e) {
-      print('Error stopping monitoring: $e');
-    }
+    } catch (_) {}
   }
 
   void setupListener(Function(String) onProcessStarted) {

@@ -28,30 +28,12 @@ class _LoLSpotifyAppState extends State<LoLSpotifyApp> with WindowListener {
   late String _locale;
   final SystemTrayService _systemTrayService = SystemTrayService();
   bool _trayInitialized = false;
-  final ProcessMonitor _monitor = ProcessMonitor();
 
   @override
   void initState() {
     super.initState();
     windowManager.addListener(this);
     _locale = widget.locale;
-    _monitor.setupListener((processName) {
-      print('Process started: $processName');
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('League of Legends Started!'),
-          content: Text('$processName is now running'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
-    });
-    _monitor.startMonitoring('LeagueClient.exe');
   }
 
   void setLocale(String locale) {
@@ -63,7 +45,6 @@ class _LoLSpotifyAppState extends State<LoLSpotifyApp> with WindowListener {
   @override
   void dispose() {
     _systemTrayService.dispose();
-    _monitor.stopMonitoring();
     windowManager.removeListener(this);
     super.dispose();
   }

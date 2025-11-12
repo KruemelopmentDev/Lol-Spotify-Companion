@@ -40,8 +40,8 @@ bool FlutterWindow::OnCreate() {
       &flutter::StandardMethodCodec::GetInstance()
   );
 
-  // Create process monitor
-  process_monitor_ = std::make_unique<ProcessMonitor>(channel_.get());
+  // Create process monitor with window handle for message posting
+  process_monitor_ = std::make_unique<ProcessMonitor>(channel_.get(), GetHandle());
 
   // Set up method call handler
   channel_->SetMethodCallHandler(
@@ -90,6 +90,12 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
+  // Handle our custom message for process notifications
+  if (message == WM_PROCESS_STARTED && process_monitor_) {
+    process_monitor_->ProcessPendingNotifications();
+    return 0;
+  }
+
   if (flutter_controller_) {
     std::optional<LRESULT> result =
         flutter_controller_->HandleTopLevelWindowProc(hwnd, message, wparam,

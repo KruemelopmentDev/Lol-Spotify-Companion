@@ -87,8 +87,31 @@ class SpotifyService {
     tokenExpiry = null;
   }
 
+  Future<bool> isCurrentlyPlaying() async {
+    if (!isConnected) return false;
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.spotify.com/v1/me/player'),
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['is_playing'] == true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<bool> playSong(String spotifyId) async {
     if (!isConnected) return false;
+    final isPlaying = await isCurrentlyPlaying();
+    if (!isPlaying) {
+      return false;
+    }
     if (spotifyId.contains("/")) {
       spotifyId = spotifyId.substring(spotifyId.lastIndexOf("/") + 1);
     }

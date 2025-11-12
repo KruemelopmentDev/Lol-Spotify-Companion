@@ -3,10 +3,9 @@
 #include <flutter/standard_method_codec.h>
 #include <iostream>
 
-
 // EventSink Implementation
-EventSink::EventSink(flutter::MethodChannel<flutter::EncodableValue>* channel, const std::string& process_name)
-    : ref_count_(1), channel_(channel), target_process_(process_name) {}
+EventSink::EventSink(ProcessMonitor* monitor, const std::string& process_name)
+    : ref_count_(1), monitor_(monitor), target_process_(process_name) {}
 
 EventSink::~EventSink() {}
 
@@ -52,10 +51,8 @@ STDMETHODIMP EventSink::Indicate(LONG lObjectCount, IWbemClassObject** apObjArra
                     std::string process_name = (char*)bstr;
                     
                     if (process_name == target_process_) {
-                        channel_->InvokeMethod(
-                            "onProcessStarted",
-                            std::make_unique<flutter::EncodableValue>(process_name)
-                        );
+                        // Queue the notification instead of calling directly
+                        monitor_->QueueNotification(process_name);
                     }
                 }
                 VariantClear(&vtName);
@@ -72,14 +69,44 @@ STDMETHODIMP EventSink::SetStatus(LONG lFlags, HRESULT hResult, BSTR strParam, I
 }
 
 // ProcessMonitor Implementation
-ProcessMonitor::ProcessMonitor(flutter::MethodChannel<flutter::EncodableValue>* channel)
-    : channel_(channel), monitoring_(false), locator_(nullptr), services_(nullptr) {
+ProcessMonitor::ProcessMonitor(flutter::MethodChannel<flutter::EncodableValue>* channel, HWND window)
+    : channel_(channel), window_(window), monitoring_(false), locator_(nullptr), services_(nullptr) {
     CoInitializeEx(0, COINIT_MULTITHREADED);
 }
 
 ProcessMonitor::~ProcessMonitor() {
     StopMonitoring();
     CoUninitialize();
+}
+
+void ProcessMonitor::QueueNotification(const std::string& process_name) {
+    {
+        std::lock_guard<std::mutex> lock(queue_mutex_);
+        notification_queue_.push(process_name);
+    }
+    
+    // Post message to main window to process notifications on platform thread
+    PostMessage(window_, WM_PROCESS_STARTED, 0, 0);
+}
+
+void ProcessMonitor::ProcessPendingNotifications() {
+    std::queue<std::string> notifications;
+    
+    {
+        std::lock_guard<std::mutex> lock(queue_mutex_);
+        notifications.swap(notification_queue_);
+    }
+    
+    while (!notifications.empty()) {
+        std::string process_name = notifications.front();
+        notifications.pop();
+        
+        // Now we're on the platform thread, safe to call Flutter
+        channel_->InvokeMethod(
+            "onProcessStarted",
+            std::make_unique<flutter::EncodableValue>(process_name)
+        );
+    }
 }
 
 void ProcessMonitor::StartMonitoring(const std::string& process_name) {
@@ -161,7 +188,7 @@ void ProcessMonitor::MonitorLoop() {
         return;
     }
     
-    EventSink* event_sink = new EventSink(channel_, target_process_);
+    EventSink* event_sink = new EventSink(this, target_process_);
     
     std::wstring query = L"SELECT * FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'";
     
