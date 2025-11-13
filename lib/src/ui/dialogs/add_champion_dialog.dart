@@ -348,6 +348,13 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
                         children: [
                           OutlinedButton(
                             onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.only(
+                                bottom: 12,
+                                left: 24,
+                                right: 24,
+                              ),
+                            ),
                             child: Text(loc.translate('cancel')),
                           ),
                           const SizedBox(width: 8),
@@ -362,6 +369,13 @@ class _AddChampionDialogState extends State<AddChampionDialog> {
                               shape: WidgetStateProperty.all(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(100),
+                                ),
+                              ),
+                              padding: WidgetStateProperty.all(
+                                const EdgeInsets.only(
+                                  bottom: 10,
+                                  left: 24,
+                                  right: 24,
                                 ),
                               ),
                             ),

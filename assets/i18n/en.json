@@ -58,5 +58,17 @@
   "riot_connection_error": "Error connecting to League Client",
   "connecting": "Connecting...",
   "now_playing": "is now playing",
-  "playback_failed": "Starting playback failed"
+  "playback_failed": "Starting playback failed",
+  "select_import_file": "Select a file to import",
+  "file_not_found": "File not found",
+  "confirm_import": "Confirm Import",
+  "import_count": "Count of items to import",
+  "this_will_be_added_to_data": "This data will be added to your existing data",
+  "import": "Import",
+  "import_success": "items imported successfully",
+  "import_failed": "Error during import",
+  "delete_all": "Delete all",
+  "delete_all_songs": "Delete all champion songs",
+  "delete_all_confirm": "Are you sure you want to delete all champion songs?",
+  "all_songs_deleted": "All champion songs have been deleted"
 }

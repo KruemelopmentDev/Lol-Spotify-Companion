@@ -57,5 +57,17 @@
   "riot_connection_error": "Fehler beim Verbinden mit dem League Client",
   "connecting": "Verbinden...",
   "now_playing": "wird jetzt abgespielt",
-  "playback_failed": "Fehler beim Abspielen"
+  "playback_failed": "Fehler beim Abspielen",
+  "select_import_file": "Wähle die zu importierende Datei aus",
+  "file_not_found": "Datei nicht gefunden",
+  "confirm_import": "Import bestätigen",
+  "import_count": "Anzahl der zu importierenden Elemente",
+  "this_will_be_added_to_data": "Diese Daten werden den bereits existierenden Daten hinzugefügt",
+  "import": "Importieren",
+  "import_success": "Elemente erfolgreich importiert",
+  "import_failed": "Fehler beim Importiern",
+  "delete_all": "Alle löschen",
+  "delete_all_songs": "Alle Champion-Songs löschen",
+  "delete_all_confirm": "Bist du dir sicher, dass du alle Champion-Songs löschen möchtest?",
+  "all_songs_deleted": "Alle Champion-Songs wurden gelöscht"
 }

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:lol_spotify_companion/src/services/process_monitor.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../app.dart';
 import '../../l10n/app_localizations.dart';
@@ -160,6 +161,7 @@ class _HomePageState extends State<HomePage> {
       final List<dynamic> jsonList = jsonDecode(data);
       setState(() {
         championSongs = jsonList.map((e) => ChampionSong.fromJson(e)).toList();
+        championSongs.sort((a, b) => a.championName.compareTo(b.championName));
         filteredSongs = List.from(championSongs);
       });
     }
@@ -207,34 +209,101 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> importData() async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
       if (!mounted) return;
       final loc = AppLocalizations.of(context);
+      final colorScheme = Theme.of(context).colorScheme;
 
-      showDialog(
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        dialogTitle: loc.translate('select_import_file'),
+      );
+
+      if (result == null || result.files.single.path == null) {
+        // User canceled the file picker
+        return;
+      }
+
+      final filePath = result.files.single.path!;
+      final file = File(filePath);
+
+      if (!await file.exists()) {
+        throw Exception(loc.translate('file_not_found'));
+      }
+
+      final jsonString = await file.readAsString();
+      final jsonList = jsonDecode(jsonString) as List<dynamic>;
+
+      final importedSongs = jsonList
+          .map((json) => ChampionSong.fromJson(json as Map<String, dynamic>))
+          .toList();
+
+      if (!mounted) return;
+
+      final shouldImport = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(loc.translate('import_data')),
+          title: Text(loc.translate('confirm_import')),
           content: Text(
-            '${loc.translate('import_instructions')}\n${directory.path}',
-            style: const TextStyle(fontSize: 14),
+            '${loc.translate('import_count')}: ${importedSongs.length}\n${loc.translate('this_will_be_added_to_data')}',
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.only(bottom: 12, left: 24, right: 24),
+              ),
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(loc.translate('cancel')),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(colorScheme.primary),
+                foregroundColor: WidgetStateProperty.all(colorScheme.onPrimary),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                ),
+                padding: WidgetStateProperty.all(
+                  const EdgeInsets.only(bottom: 12, left: 24, right: 24),
+                ),
+              ),
+              child: Text(loc.translate('import')),
             ),
           ],
         ),
       );
+
+      if (shouldImport != true || !mounted) return;
+
+      setState(() {
+        importedSongs.sort((a, b) => a.championName.compareTo(b.championName));
+        championSongs.addAll(importedSongs);
+      });
+      _filterSongs();
+      saveData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${importedSongs.length} ${loc.translate('import_success')}',
+            ),
+            backgroundColor: colorScheme.primary,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         final loc = AppLocalizations.of(context);
         final colorScheme = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${loc.translate('error')}: $e'),
+            content: Text('${loc.translate('import_failed')}: $e'),
             backgroundColor: colorScheme.error,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -274,6 +343,70 @@ class _HomePageState extends State<HomePage> {
       _filterSongs();
     });
     saveData();
+  }
+
+  Future<void> deleteAllChampionSongs() async {
+    if (!mounted) return;
+    final loc = AppLocalizations.of(context);
+
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text(loc.translate('delete_all_songs'))),
+        content: Text(
+          '${loc.translate('delete_all_confirm')} (${championSongs.length} Champion-Songs)',
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.pop(context, false),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.only(bottom: 12, left: 24, right: 24),
+            ),
+            child: Text(loc.translate('cancel')),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                Theme.of(context).colorScheme.error,
+              ),
+              foregroundColor: WidgetStateProperty.all(
+                Theme.of(context).colorScheme.onError,
+              ),
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              padding: WidgetStateProperty.all(
+                const EdgeInsets.only(bottom: 12, left: 24, right: 24),
+              ),
+            ),
+            child: Text(
+              loc.translate('delete_all'),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true && mounted) {
+      setState(() {
+        championSongs.clear();
+        _filterSongs();
+      });
+      await saveData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.translate('all_songs_deleted')),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -437,20 +570,15 @@ class _HomePageState extends State<HomePage> {
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.all(16),
                                   leading: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
                                     child: Image.asset(
                                       song.imagePath,
-                                      width: 56,
-                                      height: 56,
-                                      fit: BoxFit.cover,
+                                      fit: BoxFit.contain,
                                       errorBuilder:
                                           (
                                             context,
                                             error,
                                             stackTrace,
                                           ) => Container(
-                                            width: 56,
-                                            height: 56,
                                             color: colorScheme.primary,
                                             child: Center(
                                               child: Text(
@@ -535,13 +663,23 @@ class _HomePageState extends State<HomePage> {
                                               title: Center(
                                                 child: Text(
                                                   loc.translate('delete_song'),
+                                                  textAlign: TextAlign.center,
                                                 ),
                                               ),
                                               content: Text(
                                                 '${loc.translate('delete_confirm1')} ${song.songName} ${loc.translate('delete_confirm2')} ${song.artistName} ${loc.translate('delete_confirm3')} ${song.championName} ${loc.translate('delete_confirm4')}?',
+                                                textAlign: TextAlign.center,
                                               ),
                                               actions: [
                                                 OutlinedButton(
+                                                  style: OutlinedButton.styleFrom(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          bottom: 12,
+                                                          left: 24,
+                                                          right: 24,
+                                                        ),
+                                                  ),
                                                   onPressed: () =>
                                                       Navigator.pop(context),
                                                   child: Text(
@@ -574,6 +712,14 @@ class _HomePageState extends State<HomePage> {
                                                             ),
                                                       ),
                                                     ),
+                                                    padding:
+                                                        WidgetStateProperty.all(
+                                                          const EdgeInsets.only(
+                                                            bottom: 12,
+                                                            left: 24,
+                                                            right: 24,
+                                                          ),
+                                                        ),
                                                   ),
                                                   child: Text(
                                                     loc.translate('delete'),
@@ -594,33 +740,65 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          if (spotifyConnected) {
-            showDialog(
-              context: context,
-              builder: (context) => AddChampionDialog(
-                champions: _allChampions,
-                onAdd: addChampionSong,
-                spotifyService: spotifyService,
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          if (championSongs.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 20),
+              child: FloatingActionButton.extended(
+                onPressed: deleteAllChampionSongs,
+                icon: Icon(Icons.delete_sweep, color: colorScheme.onError),
+                label: Text(
+                  loc.translate('delete_all'),
+                  style: TextStyle(
+                    color: colorScheme.onError,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                backgroundColor: colorScheme.error,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
               ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(loc.translate("connectToSpotify"))),
-            );
-          }
-        },
-        icon: Icon(Icons.add, color: colorScheme.onPrimary),
-        label: Text(
-          loc.translate('add_champion'),
-          style: TextStyle(
-            color: colorScheme.onPrimary,
-            fontWeight: FontWeight.bold,
+            )
+          else
+            const SizedBox(width: 32),
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: FloatingActionButton.extended(
+              onPressed: () {
+                if (spotifyConnected) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AddChampionDialog(
+                      champions: _allChampions,
+                      onAdd: addChampionSong,
+                      spotifyService: spotifyService,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(loc.translate("connectToSpotify"))),
+                  );
+                }
+              },
+              icon: Icon(Icons.add, color: colorScheme.onPrimary),
+              label: Text(
+                loc.translate('add_champion'),
+                style: TextStyle(
+                  color: colorScheme.onPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
           ),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+        ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

@@ -34,7 +34,7 @@ final appTheme = ThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: lolColorScheme.primary,
       foregroundColor: lolColorScheme.onPrimary,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.only(bottom: 12, left: 24, right: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     ),
   ),

@@ -41,7 +41,6 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
   }
 
   void _onRiotConnectionChange() {
-    print(1);
     widget.onConnectionChanged();
     if (alertErrorRiotConnection && !widget.riotService.isConnected) {
       final loc = AppLocalizations.of(context);
@@ -367,6 +366,10 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
                                       widget.spotifyService.isConnected
                                       ? colorScheme.error
                                       : const Color(0xFF1DB954),
+                                  padding: const EdgeInsets.only(
+                                    left: 24,
+                                    right: 24,
+                                  ),
                                 ),
                               ),
                             ),
@@ -473,6 +476,10 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
                                       widget.riotService.isConnected
                                       ? colorScheme.error
                                       : colorScheme.primary,
+                                  padding: const EdgeInsets.only(
+                                    left: 24,
+                                    right: 24,
+                                  ),
                                 ),
                               ),
                             ),
@@ -483,6 +490,13 @@ class _ConnectionsDialogState extends State<ConnectionsDialog> {
                       Align(
                         alignment: Alignment.center,
                         child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.only(
+                              bottom: 12,
+                              left: 24,
+                              right: 24,
+                            ),
+                          ),
                           onPressed: () => Navigator.pop(context),
                           child: Text(loc.translate('close')),
                         ),
