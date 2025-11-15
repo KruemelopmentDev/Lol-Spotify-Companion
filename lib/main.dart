@@ -4,8 +4,10 @@ import 'package:window_manager/window_manager.dart';
 import 'dart:io';
 import 'app.dart';
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  final bool isAutostart = args.contains('--autostart');
+
   if (Platform.isWindows) {
     await windowManager.ensureInitialized();
     await windowManager.setPreventClose(true);
@@ -19,8 +21,12 @@ Future<void> main() async {
     );
 
     windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
+      if (isAutostart) {
+        await windowManager.minimize();
+      } else {
+        await windowManager.show();
+        await windowManager.focus();
+      }
     });
   }
   final prefs = await SharedPreferences.getInstance();
