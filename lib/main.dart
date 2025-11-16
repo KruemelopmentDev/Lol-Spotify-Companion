@@ -13,6 +13,7 @@ Future<void> main(List<String> args) async {
     await windowManager.setPreventClose(true);
     WindowOptions windowOptions = const WindowOptions(
       size: Size(800, 800),
+      title: 'LoL Spotify Companion',
       minimumSize: Size(800, 800),
       center: true,
       backgroundColor: Colors.transparent,

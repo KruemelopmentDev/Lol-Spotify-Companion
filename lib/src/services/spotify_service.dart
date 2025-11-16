@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SpotifyService {
   static const String clientId = '7cc258314e8f418aa792dd85d7a1ba69';
   static const String clientSecret = 'f3aac8ba753f410eb076ccab60b2b4c6';
-  static const String redirectUri = 'http://localhost:8888/callback';
+  static const String redirectUri = 'http://127.0.0.1:8888/callback';
   static const String _tokenUrl = 'https://accounts.spotify.com/api/token';
 
   String? accessToken;
