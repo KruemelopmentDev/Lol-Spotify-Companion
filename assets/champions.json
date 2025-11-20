@@ -169,5 +169,6 @@
   { "ID": 901, "name": "Smolder", "image": "assets/champions/smolder.png" },
   { "ID": 902, "name": "Milio", "image": "assets/champions/milio.png" },
   { "ID": 910, "name": "Hwei", "image": "assets/champions/hwei.png" },
-  { "ID": 950, "name": "Naafiri", "image": "assets/champions/naafiri.png" }
+  { "ID": 950, "name": "Naafiri", "image": "assets/champions/naafiri.png" },
+  { "ID": 904, "name": "Zaheen", "image": "assets/champions/zaheen.png" }
 ]
