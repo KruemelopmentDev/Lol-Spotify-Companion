@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class SpotifyService {
-  static const String clientId = '7cc258314e8f418aa792dd85d7a1ba69';
-  static const String clientSecret = 'f3aac8ba753f410eb076ccab60b2b4c6';
-  static const String redirectUri = 'http://127.0.0.1:8888/callback';
-  static const String _tokenUrl = 'https://accounts.spotify.com/api/token';
+  static String get clientId => dotenv.env['SPOTIFY_CLIENT_ID'] ?? '';
+  static String get clientSecret => dotenv.env['SPOTIFY_CLIENT_SECRET'] ?? '';
+  static String get redirectUri => dotenv.env['SPOTIFY_REDIRECT_URI'] ?? '';
+  static String get _tokenUrl => dotenv.env['SPOTIFY_TOKEN_URL'] ?? '';
 
   String? accessToken;
   String? refreshToken;
