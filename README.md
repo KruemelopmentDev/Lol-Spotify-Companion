@@ -12,3 +12,5 @@ A Flutter app that controls your Spotify based on your selected League of Legend
    - SPOTIFY_TOKEN_URL
 3. Start the app and enjoy:
    - Run `flutter run`
+
+The secret in the git history is not active anymore.
